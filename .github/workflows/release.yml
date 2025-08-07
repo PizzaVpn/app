@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+
+
 jobs:
   build-release-assets:
     runs-on: ubuntu-latest
@@ -33,7 +35,13 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const releaseId = context.payload.release.id;
+            const releaseId = context.payload.release?.id;
+            
+            if (!releaseId) {
+              console.log('Skipping Windows upload: No release ID found in context.');
+              return;
+            }
+            
             const filePath = 'windows.zip';
             const fileName = 'windows.zip';
 
@@ -58,8 +66,14 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
+            const releaseId = context.payload.release?.id;
+
+            if (!releaseId) {
+              console.log('Skipping Android upload: No release ID found in context.');
+              return;
+            }
+
             const androidDir = 'android';
-            const releaseId = context.payload.release.id;
 
             if (fs.existsSync(androidDir)) {
               console.log(`Uploading individual files from ${androidDir}`);
