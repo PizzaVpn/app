@@ -31,6 +31,7 @@ jobs:
       # Upload the Windows zip file using github-script for consistency
       - name: Upload Windows zip file
         uses: actions/github-script@v6
+        id: create-windows-release
         with:
           script: |
             const fs = require('fs');
@@ -62,6 +63,7 @@ jobs:
       # This uses a script to find and upload each file in a loop.
       - name: Upload individual Android files
         uses: actions/github-script@v6
+        id: create-android-release
         with:
           script: |
             const fs = require('fs');
@@ -96,3 +98,31 @@ jobs:
             } else {
               console.log(`Android directory not found, skipping.`);
             }
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: V${{ github.run_number }}
+          release_name: Release V${{ github.run_number }}
+
+      - name: Upload windows assets to GithubRelease
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create-windows-release.outputs.upload_url}}
+          asset_path: ./windows.zip
+          asset_name: Windows.zip
+          asset_content_type: application/zip
+
+      - name: Upload android assets to GithubRelease
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create-android-release.outputs.upload_url}}
+          asset_path: ./windows.zip
+          asset_name: Windows.zip
+          asset_content_type: application/zip
