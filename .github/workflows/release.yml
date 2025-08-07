@@ -3,7 +3,7 @@ name: Create Release Assets
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-release-assets:
