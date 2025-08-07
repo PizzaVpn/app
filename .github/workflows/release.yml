@@ -5,28 +5,28 @@ on:
     branches:
       - master
 
-
 jobs:
   build-release-assets:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # This is a broader permission that also allows writing to releases
-      # A more specific alternative is:
-      # releases: write
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # This step creates the new release and provides its outputs.
       - name: Create release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: V${{ github.run_number }}
           release_name: Release V${{ github.run_number }}
+          draft: false
+          prerelease: false
 
       # Step to handle the Windows release files.
-      # Zipping is a good approach for multiple files.
       - name: Create Windows zip archive
         run: |
           if [ -d "windows" ]; then
@@ -36,52 +36,26 @@ jobs:
             echo "Windows directory not found, skipping."
           fi
 
-      # Upload the Windows zip file using github-script for consistency
+      # Upload the Windows zip file using the upload_url output from the create-release step.
       - name: Upload Windows zip file
-        uses: actions/github-script@v6
-        id: create-windows-release
+        uses: actions/upload-release-asset@v1
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const releaseId = context.payload.release?.id;
-            
-            if (!releaseId) {
-              console.log('Skipping Windows upload: No release ID found in context.');
-              return;
-            }
-            
-            const filePath = 'windows.zip';
-            const fileName = 'windows.zip';
-
-            if (fs.existsSync(filePath)) {
-              console.log(`Uploading file: ${fileName}`);
-              await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: releaseId,
-                name: fileName,
-                data: fs.readFileSync(filePath),
-              });
-            } else {
-              console.log(`${fileName} not found, skipping upload.`);
-            }
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: windows.zip
+          asset_name: windows.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Find all files in the android directory and upload them individually.
-      # This uses a script to find and upload each file in a loop.
+      # This uses the release_id from the create-release step.
       - name: Upload individual Android files
         uses: actions/github-script@v6
-        id: create-android-release
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const releaseId = context.payload.release?.id;
-
-            if (!releaseId) {
-              console.log('Skipping Android upload: No release ID found in context.');
-              return;
-            }
+            const releaseId = '${{ steps.create_release.outputs.id }}';
 
             const androidDir = 'android';
 
@@ -105,5 +79,3 @@ jobs:
               }
             } else {
               console.log(`Android directory not found, skipping.`);
-            }
-
