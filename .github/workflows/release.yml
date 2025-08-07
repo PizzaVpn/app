@@ -1,7 +1,9 @@
 name: Create Release Assets
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build-release-assets:
