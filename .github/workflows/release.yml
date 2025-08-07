@@ -9,7 +9,9 @@ jobs:
   build-release-assets:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # This is a broader permission that also allows writing to releases
+      # A more specific alternative is:
+      # releases: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
