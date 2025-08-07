@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-
 jobs:
   build-release-assets:
     runs-on: ubuntu-latest
@@ -27,16 +26,29 @@ jobs:
             echo "Windows directory not found, skipping."
           fi
 
-      # Upload the Windows zip file.
+      # Upload the Windows zip file using github-script for consistency
       - name: Upload Windows zip file
-        uses: actions/upload-release-asset@v1
+        uses: actions/github-script@v6
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: windows.zip
-          asset_name: windows.zip
-          asset_content_type: application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const releaseId = context.payload.release.id;
+            const filePath = 'windows.zip';
+            const fileName = 'windows.zip';
+
+            if (fs.existsSync(filePath)) {
+              console.log(`Uploading file: ${fileName}`);
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                name: fileName,
+                data: fs.readFileSync(filePath),
+              });
+            } else {
+              console.log(`${fileName} not found, skipping upload.`);
+            }
 
       # Find all files in the android directory and upload them individually.
       # This uses a script to find and upload each file in a loop.
@@ -47,6 +59,7 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const androidDir = 'android';
+            const releaseId = context.payload.release.id;
 
             if (fs.existsSync(androidDir)) {
               console.log(`Uploading individual files from ${androidDir}`);
@@ -60,7 +73,7 @@ jobs:
                   await github.rest.repos.uploadReleaseAsset({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    release_id: context.payload.release.id,
+                    release_id: releaseId,
                     name: file,
                     data: fs.readFileSync(filePath),
                   });
