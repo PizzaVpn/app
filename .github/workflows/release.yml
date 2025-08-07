@@ -1,3 +1,4 @@
+# .github/workflows/release.yml
 name: Create Release Assets
 
 on:
@@ -51,11 +52,14 @@ jobs:
       # This uses the release_id from the create-release step.
       - name: Upload individual Android files
         uses: actions/github-script@v6
+        # Pass the release ID as an environment variable so the script can access it.
+        env:
+          RELEASE_ID: ${{ steps.create_release.outputs.id }}
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const releaseId = '${{ steps.create_release.outputs.id }}';
+            const releaseId = process.env.RELEASE_ID;
 
             const androidDir = 'android';
 
@@ -79,3 +83,4 @@ jobs:
               }
             } else {
               console.log(`Android directory not found, skipping.`);
+            }
