@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
   <AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018"
-    Uri="E:\pizzavpn-releases\windows\pizzaton.appinstaller" Version="1.0.0.0">
-    <MainPackage Name="me.pizzaton.vpn" Version="1.0.0.0"
+    Uri="E:\pizzavpn-releases\windows\pizzaton.appinstaller" Version="1.0.1.0">
+    <MainPackage Name="me.pizzaton.vpn" Version="1.0.1.0"
       Publisher="CN=Msix Testing, O=Msix Testing Corporation, S=Some-State, C=US"
-      Uri="E:\pizzavpn-releases\windows\versions\pizzaton_1.0.0.0.msix"
+      Uri="E:\pizzavpn-releases\windows\versions\pizzaton_1.0.1.0.msix"
       ProcessorArchitecture="x64" />
     <UpdateSettings>
       <OnLaunch HoursBetweenUpdateChecks="0" 
